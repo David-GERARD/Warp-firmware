@@ -1777,7 +1777,7 @@ main(void)
 	 *	Initialization: Devices hanging off SPI
 	 */
 
-#if (WARP_BUILD_ENABLE_DEVSSD1331)
+#if (WARP_BUILD_ENABLE_DEVSSD1331) // 4B25 CW2 - Initialise screen
 {
 	devSSD1331init();
 }

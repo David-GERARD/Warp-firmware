@@ -14,7 +14,7 @@ volatile uint8_t	payloadBytes[32];
 
 /*
  *	Override Warp firmware's use of these pins and define new aliases.
- */
+
 enum
 {
 	kSSD1331PinMOSI		= GPIO_MAKE_PIN(HW_GPIOA, 8),
@@ -22,7 +22,7 @@ enum
 	kSSD1331PinCSn		= GPIO_MAKE_PIN(HW_GPIOB, 13),
 	kSSD1331PinDC		= GPIO_MAKE_PIN(HW_GPIOA, 12),
 	kSSD1331PinRST		= GPIO_MAKE_PIN(HW_GPIOB, 0),
-};
+};  */
 
 static int
 writeCommand(uint8_t commandByte)
@@ -153,15 +153,37 @@ devSSD1331init(void)
 	writeCommand(0x3F);
 //	SEGGER_RTT_WriteString(0, "\r\n\tDone with screen clear...\n");
 
-
-
+	// 4B25 - fill the entire screen with brightest green 
 	/*
-	 *	Read the manual for the SSD1331 (SSD1331_1.2.pdf) to figure
-	 *	out how to fill the entire screen with the brightest shade
-	 *	of green.
-	 */
+     *	Read the manual for the SSD1331 (SSD1331_1.2.pdf) to figure
+     *	out how to fill the entire screen with the brightest shade
+     *	of green.
+     */
+
+	// CONTRASTS
+    writeCommand(kSSD1331CommandCONTRASTA); // SET CONTRAST FOR COLOUR A (BLUE)
+	writeCommand(0xFF); // 0xFF = 255 
+	writeCommand(kSSD1331CommandCONTRASTB);	// SET CONTRAST FOR COLOUR B (GREEN)
+	writeCommand(0xFF); // 0xFF = 255
+	writeCommand(kSSD1331CommandCONTRASTC);	// SET CONTRAST FOR COLOUR C (RED)
+	writeCommand(0xFF); // 0xFF = 255
+
+    // PIXEL CURRENT
+	writeCommand(kSSD1331CommandMASTERCURRENT);	// SET MASTER CURRENT CONTROL
+	writeCommand(0x0F);
 
 
+    writeCommand(kSSD1331CommandDRAWRECT); // Enter the “draw rectangle mode” by execute the command 22h
+    writeCommand(0x00); // Set the starting column coordinates
+    writeCommand(0x00); // Set the starting row coordinates
+    writeCommand(0x5F); // Set the finishing column coordinates
+    writeCommand(0x3F); // Set the finishing row coordinates
+    writeCommand(0x00); // Set the outline color C -> BLUE
+    writeCommand(0x3F); // Set the outline color B -> GREEN
+    writeCommand(0x00); // Set the outline color C -> RED
+    writeCommand(0x00); // Set the filled color C -> BLUE
+    writeCommand(0x3F); // Set the filled color B -> GREEN
+    writeCommand(0x00); // Set the filled color C -> RED
 
 
 //	SEGGER_RTT_WriteString(0, "\r\n\tDone with draw rectangle...\n");

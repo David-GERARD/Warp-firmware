@@ -58,6 +58,37 @@ gpio_output_pin_user_config_t	outputPins[] = {
 			.config.slewRate = kPortSlowSlewRate,
 			.config.driveStrength = kPortLowDriveStrength,
 		},
+		// 4B25 CW2 - Pins for OLED display with driver SSD1331
+		{
+			.pinName = kSSD1331PinMOSI,
+			.config.outputLogic = 1,
+			.config.slewRate = kPortSlowSlewRate,
+			.config.driveStrength = kPortLowDriveStrength,
+		},
+        {
+			.pinName = kSSD1331PinSCK,
+			.config.outputLogic = 1,
+			.config.slewRate = kPortSlowSlewRate,
+			.config.driveStrength = kPortLowDriveStrength,
+		},
+        {
+			.pinName = kSSD1331PinCSn,
+			.config.outputLogic = 1,
+			.config.slewRate = kPortSlowSlewRate,
+			.config.driveStrength = kPortLowDriveStrength,
+		},
+        {
+			.pinName = kSSD1331PinDC,
+			.config.outputLogic = 1,
+			.config.slewRate = kPortSlowSlewRate,
+			.config.driveStrength = kPortLowDriveStrength,
+		},
+        {
+			.pinName = kSSD1331PinRST,
+			.config.outputLogic = 1,
+			.config.slewRate = kPortSlowSlewRate,
+			.config.driveStrength = kPortLowDriveStrength,
+		},
 
 		#if (WARP_BUILD_ENABLE_DEVIS25xP)
 		{
