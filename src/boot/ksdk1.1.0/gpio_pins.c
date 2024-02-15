@@ -203,6 +203,7 @@ gpio_input_pin_user_config_t	inputPins[] = {
  *
  *	**NOTE**:	The semantics is that pins that are excluded are disabled (TODO: double check).
  */
+ /*
 gpio_input_pin_user_config_t	wakeupPins[] = {
 	{
 		.pinName = kWarpPinUnusedPTA0,
@@ -214,4 +215,4 @@ gpio_input_pin_user_config_t	wakeupPins[] = {
 	{
 		.pinName = GPIO_PINS_OUT_OF_RANGE,
 	}
-};
+};*/

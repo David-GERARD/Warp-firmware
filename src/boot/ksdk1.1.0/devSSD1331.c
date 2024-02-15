@@ -72,7 +72,7 @@ devSSD1331init(void)
 	PORT_HAL_SetMuxMode(PORTA_BASE, 8u, kPortMuxAlt3);
 	PORT_HAL_SetMuxMode(PORTA_BASE, 9u, kPortMuxAlt3);
 
-	enableSPIpins();
+	warpEnableSPIpins();
 
 	/*
 	 *	Override Warp firmware's use of these pins.
@@ -161,7 +161,7 @@ devSSD1331init(void)
 	 *	of green.
 	 */
 
-	...
+
 
 
 //	SEGGER_RTT_WriteString(0, "\r\n\tDone with draw rectangle...\n");

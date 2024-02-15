@@ -187,6 +187,10 @@
 	volatile WarpUARTDeviceState			deviceBGXState;
 #endif
 
+#if (WARP_BUILD_ENABLE_DEVSSD1331)
+	volatile WarpSPIDeviceState			deviceSSD1331tate;
+#endif
+
 typedef enum
 {
 	kWarpFlashReadingCountBitField 	= 0b1,
@@ -1772,6 +1776,12 @@ main(void)
 	/*
 	 *	Initialization: Devices hanging off SPI
 	 */
+
+#if (WARP_BUILD_ENABLE_DEVSSD1331)
+{
+	devSSD1331init();
+}
+#endif
 
 #if (WARP_BUILD_ENABLE_DEVADXL362)
 	/*
