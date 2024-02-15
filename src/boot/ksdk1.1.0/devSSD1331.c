@@ -179,10 +179,10 @@ devSSD1331init(void)
     writeCommand(0x5F); // Set the finishing column coordinates
     writeCommand(0x3F); // Set the finishing row coordinates
     writeCommand(0x00); // Set the outline color C -> BLUE
-    writeCommand(0x3F); // Set the outline color B -> GREEN
+    writeCommand(0xFF); // Set the outline color B -> GREEN
     writeCommand(0x00); // Set the outline color C -> RED
     writeCommand(0x00); // Set the filled color C -> BLUE
-    writeCommand(0x3F); // Set the filled color B -> GREEN
+    writeCommand(0xFF); // Set the filled color B -> GREEN
     writeCommand(0x00); // Set the filled color C -> RED
 
 
