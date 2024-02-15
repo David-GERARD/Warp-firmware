@@ -87,6 +87,7 @@
 #include "devHDC1000.h"
 #include "devRV8803C7.h"
 
+#include "devSSD1331.h"
 
 #if (WARP_BUILD_ENABLE_DEVADXL362)
 	volatile WarpSPIDeviceState			deviceADXL362State;
