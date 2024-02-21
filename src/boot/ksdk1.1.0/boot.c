@@ -3256,7 +3256,7 @@ writeAllSensorsToFlash(int menuDelayBetweenEachRun, int loopForever)
 
 
 	numberOfConfigErrors += configureSensorINA219(
-		configRegister
+		configPackage
 	);
 	sensorBitField = sensorBitField | kWarpFlashINA219BitField;
 #endif
