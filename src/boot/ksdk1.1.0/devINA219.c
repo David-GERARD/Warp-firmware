@@ -36,52 +36,74 @@ initINA219(const uint8_t i2cAddress, uint16_t operatingVoltageMillivolts)
 }
 
 // ----------------------------------------------------
-WarpStatus
-writeSensorRegisterINA219(uint8_t deviceRegister, uint8_t payload)
+#include <stdint.h> // Ensure you include this for uint8_t and uint16_t definitions
+
+// Define the function to take a uint16_t payload instead of uint8_t
+WarpStatus 
+writeSensorRegisterINA219(uint8_t deviceRegister, uint16_t payload)
 {
-	uint8_t		payloadByte[1], commandByte[1];
-	i2c_status_t	status;
+    uint8_t     payloadBytes[2], commandByte[1];
+    i2c_status_t    status;
 
-	switch (deviceRegister)
-	{
-		case 0x00: case 0x05:
-		{
-			/* OK */
-			break;
-		}
+    switch (deviceRegister)
+    {
+        case 0x00: case 0x05:
+        {
+            /* OK */
+            break;
+        }
 
-		default:
-		{
-			return kWarpStatusBadDeviceCommand;
-		}
-	}
+        default:
+        {
+            return kWarpStatusBadDeviceCommand;
+        }
+    }
 
-	i2c_device_t slave =
-		{
-		.address = deviceINA219State.i2cAddress,
-		.baudRate_kbps = gWarpI2cBaudRateKbps
-	};
+    i2c_device_t slave =
+    {
+        .address = deviceINA219State.i2cAddress,
+        .baudRate_kbps = gWarpI2cBaudRateKbps
+    };
 
-	warpScaleSupplyVoltage(deviceINA219State.operatingVoltageMillivolts);
-	commandByte[0] = deviceRegister;
-	payloadByte[0] = payload;
-	warpEnableI2Cpins();
+    warpScaleSupplyVoltage(deviceINA219State.operatingVoltageMillivolts);
+    commandByte[0] = deviceRegister;
+    // Split the 16-bit payload into two 8-bit parts
+    payloadBytes[0] = (payload >> 8) & 0xFF; // MSB
+    payloadBytes[1] = payload & 0xFF; // LSB
+    warpEnableI2Cpins();
 
-	status = I2C_DRV_MasterSendDataBlocking(
-		0 /* I2C instance */,
-		&slave,
-		commandByte,
-		1,
-		payloadByte,
-		1,
-		gWarpI2cTimeoutMilliseconds);
-	if (status != kStatus_I2C_Success)
-	{
-		return kWarpStatusDeviceCommunicationFailed;
-	}
+    // First, send the device register and the MSB of the payload
+    status = I2C_DRV_MasterSendDataBlocking(
+        0 /* I2C instance */,
+        &slave,
+        commandByte,
+        1,
+        &payloadBytes[0],
+        1,
+        gWarpI2cTimeoutMilliseconds);
+    if (status != kStatus_I2C_Success)
+    {
+        return kWarpStatusDeviceCommunicationFailed;
+    }
 
-	return kWarpStatusOK;
+    // Next, send the LSB of the payload
+    // Note: Depending on the device protocol, you might need to adjust how the LSB is sent or if additional steps are required
+    status = I2C_DRV_MasterSendDataBlocking(
+        0 /* I2C instance */,
+        &slave,
+        NULL, // No command byte needed for the second byte, if the device automatically increments the register address
+        0,
+        &payloadBytes[1],
+        1,
+        gWarpI2cTimeoutMilliseconds);
+    if (status != kStatus_I2C_Success)
+    {
+        return kWarpStatusDeviceCommunicationFailed;
+    }
+
+    return kWarpStatusOK;
 }
+
 
 // ----------------------------------------------------
 
