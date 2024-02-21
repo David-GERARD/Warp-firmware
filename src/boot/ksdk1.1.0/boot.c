@@ -3255,7 +3255,7 @@ writeAllSensorsToFlash(int menuDelayBetweenEachRun, int loopForever)
     (kINA219ConfigMODE); // 3 bits, no shift needed as it's the LSB
 
 
-	numberOfConfigErrors += configureSensoINA219(
+	numberOfConfigErrors += configureSensorINA219(
 		configRegister
 	);
 	sensorBitField = sensorBitField | kWarpFlashINA219BitField;
