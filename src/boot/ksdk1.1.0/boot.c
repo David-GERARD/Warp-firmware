@@ -2202,6 +2202,7 @@ main(void)
 					warpPrint("\r\t- 'k' AS7263			(0x00--0x2B): 2.7V -- 3.6V\n");
 #else
 					warpPrint("\r\t- 'k' AS7263			(0x00--0x2B): 2.7V -- 3.6V (compiled out) \n");
+#endif
 
 #if (WARP_BUILD_ENABLE_DEVINA219)
 					warpPrint("\r\t- 'l' INA219			(0x00--0x05): 3.0V -- 5.5V\n");
@@ -2209,8 +2210,6 @@ main(void)
 					warpPrint("\r\t- 'l' INA219			(0x00--0x05): 3.0V -- 5.5V (compiled out) \n");
 #endif
 
-
-#endif
 
 				warpPrint("\r\tEnter selection> ");
 				key = warpWaitKey();
@@ -2360,15 +2359,16 @@ main(void)
 						menuI2cDevice = &deviceAS7263State;
 						break;
 					}
+#endif
 
 #if (WARP_BUILD_ENABLE_DEVINA219)
 					case 'l':
 					{
 						menuTargetSensor = kWarpSensorINA219;
-							menuI2cDevice = &deviceINA219;
+							menuI2cDevice = &deviceINA219State;
 						break;
 					}
-#endif
+
 #endif
 					default:
 					{
