@@ -115,6 +115,11 @@ enum _gpio_pins
 	kSSD1331PinCSn		= GPIO_MAKE_PIN(HW_GPIOB, 13),
 	kSSD1331PinDC		= GPIO_MAKE_PIN(HW_GPIOA, 12),
 	kSSD1331PinRST		= GPIO_MAKE_PIN(HW_GPIOB, 0),
+
+	// 4B25 CW3 - Pins for current reader with driver INA219
+	kINA219PinSCL		= GPIO_MAKE_PIN(HW_GPIOB, 3),
+	kINA219PinSDA		= GPIO_MAKE_PIN(HW_GPIOB, 4)
+
 };
 
 extern gpio_input_pin_user_config_t	inputPins[];

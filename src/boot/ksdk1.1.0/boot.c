@@ -124,7 +124,7 @@
 	volatile WarpI2CDeviceState			deviceMMA8451QState;
 #endif
 
-#if (WARP_BUILD_ENABLE_DEVMMA8451Q)
+#if (WARP_BUILD_ENABLE_DEVINA219)
 	volatile WarpI2CDeviceState			deviceINA219State;
 #endif
 
@@ -1678,11 +1678,23 @@ main(void)
 /*
  *	Initialize all the sensors
  */
+/*
+	 *	Initialization: Devices hanging off SPI
+	 */
+
+#if (WARP_BUILD_ENABLE_DEVSSD1331) // 4B25 CW2 - Initialise screen
+{
+	devSSD1331init();
+}
+#endif
+
+
 #if (WARP_BUILD_ENABLE_DEVBMX055)
 		initBMX055accel(0x18	/* i2cAddress */,	kWarpDefaultSupplyVoltageMillivoltsBMX055accel	);
 		initBMX055gyro(	0x68	/* i2cAddress */,	kWarpDefaultSupplyVoltageMillivoltsBMX055gyro	);
 		initBMX055mag(	0x10	/* i2cAddress */,	kWarpDefaultSupplyVoltageMillivoltsBMX055mag	);
 #endif
+	
 
 #if (WARP_BUILD_ENABLE_DEVMMA8451Q)
 		initMMA8451Q(	0x1D	/* i2cAddress */,	kWarpDefaultSupplyVoltageMillivoltsMMA8451Q	);
@@ -1783,15 +1795,7 @@ main(void)
 	}
 #endif
 
-	/*
-	 *	Initialization: Devices hanging off SPI
-	 */
 
-#if (WARP_BUILD_ENABLE_DEVSSD1331) // 4B25 CW2 - Initialise screen
-{
-	devSSD1331init();
-}
-#endif
 
 #if (WARP_BUILD_ENABLE_DEVADXL362)
 	/*
