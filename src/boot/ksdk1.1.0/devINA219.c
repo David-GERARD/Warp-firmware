@@ -32,6 +32,22 @@ initINA219(const uint8_t i2cAddress, uint16_t operatingVoltageMillivolts)
 	deviceINA219State.i2cAddress			= i2cAddress;
 	deviceINA219State.operatingVoltageMillivolts	= operatingVoltageMillivolts;
 
+	uint16_t configPackageINA219 = (kINA219ConfigRST << 15)
+                            | (kINA219Config_ << 14)
+                            | (kINA219ConfigBRNG << 13)
+                            | (kINA219ConfigPG << 11)
+                            | (kINA219ConfigBADC << 7)
+                            | (kINA219ConfigSADC << 3)
+                            | (kINA219ConfigMODE);
+
+	warpPrint("\nConfig package: ");
+	warpPrint(" 0b");
+    // Print each bit of the result
+    for (int i = 15; i >= 0; i--) {
+        warpPrint("%u", (configPackageINA219 >> i) & 1);
+    }
+    warpPrint("\n");
+
 	configureSensorINA219(configPackageINA219);
 
 	return;
@@ -264,6 +280,167 @@ printSensorDataINA219(bool hexModeFlag)
 }
 
 // ----------------------------------------------------
+
+
+void
+printRealValuesINA219()
+{
+	uint8_t	readSensorRegisterValueLSB;
+	int8_t	readSensorRegisterValueMSB;
+	int16_t		readSensorValueCombined;
+	WarpStatus	i2cReadStatus;
+
+
+	warpScaleSupplyVoltage(deviceINA219State.operatingVoltageMillivolts);
+
+
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Shunt_Voltage, 2 /* numberOfBytes */);
+	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	readSensorValueCombined = computeShuntVoltage(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
+
+
+	if (i2cReadStatus != kWarpStatusOK)
+	{
+		warpPrint(" ----,");
+	}
+	else
+	{
+	
+			warpPrint("%d, ",readSensorValueCombined);
+
+	}
+
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Bus_Voltage, 2 /* numberOfBytes */);
+	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	readSensorValueCombined = computeBusVoltage(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
+
+
+	if (i2cReadStatus != kWarpStatusOK)
+	{
+		warpPrint(" ----,");
+	}
+	else
+	{
+	
+			warpPrint("%d, ",readSensorValueCombined);
+
+	}
+
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Power, 2 /* numberOfBytes */);
+	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	readSensorValueCombined = computePower(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
+
+
+	if (i2cReadStatus != kWarpStatusOK)
+	{
+		warpPrint(" ----,");
+	}
+	else
+	{
+	
+			warpPrint("%d, ",readSensorValueCombined);
+
+	}
+
+	// i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Current, 2 /* numberOfBytes */);
+	// readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	// readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	// readSensorValueCombined = computeCurrent(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
+
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Shunt_Voltage, 2 /* numberOfBytes */);
+	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	readSensorValueCombined = computeShuntVoltage(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
+	float current = readSensorValueCombined/shuntResitance;
+
+
+	if (i2cReadStatus != kWarpStatusOK)
+	{
+		warpPrint(" ----,");
+	}
+	else
+	{
+
+			warpPrint("%d\n", (int)current);
+
+	}
+
+
+}
+
+
+int16_t 
+computeShuntVoltage(uint8_t readSensorRegisterValueMSB, uint8_t readSensorRegisterValueLSB)
+{
+	uint16_t combinedValue = ((uint16_t)readSensorRegisterValueMSB << 8) | readSensorRegisterValueLSB;
+
+	switch (kINA219ConfigPG)
+	{
+	case 0b00: // PGA = 1
+		// Combine the MSB and LSB into a 16-bit unsigned value
+		if (readSensorRegisterValueMSB & 0x80) combinedValue |= 0xF000;
+		break;
+	case 0b01: // PGA = %2
+		// Combine the MSB and LSB into a 16-bit unsigned value
+		if (readSensorRegisterValueMSB & 0x40) combinedValue |= 0xF800;
+		break;
+	case 0b10: // PGA = %4
+		// Combine the MSB and LSB into a 16-bit unsigned value
+		if (readSensorRegisterValueMSB & 0x20) combinedValue |= 0xFC00;
+		break;
+	case 0b11: // PGA = %8
+		// Combine the MSB and LSB into a 16-bit unsigned value
+		if (readSensorRegisterValueMSB & 0x10) combinedValue |= 0xFE00;
+		break;
+	default:
+		warpPrint("Invalid PGA setting\n");
+		break;
+
+
+    }
+
+	return combinedValue*10; // LSB is 10uV
+}
+		
+	
+	
+
+int16_t 
+computeBusVoltage(uint8_t readSensorRegisterValueMSB, uint8_t readSensorRegisterValueLSB)
+{
+	// TODO : Calibration 
+
+	uint16_t combinedValue = ((uint16_t)readSensorRegisterValueMSB << 8) | readSensorRegisterValueLSB;
+	return combinedValue;
+
+}
+
+int16_t 
+computePower(uint8_t readSensorRegisterValueMSB, uint8_t readSensorRegisterValueLSB)
+{
+	// TODO : Calibration
+
+	uint16_t combinedValue = ((uint16_t)readSensorRegisterValueMSB << 8) | readSensorRegisterValueLSB;
+	return combinedValue;
+}
+
+int16_t 
+computeCurrent(uint8_t readSensorRegisterValueMSB, uint8_t readSensorRegisterValueLSB)
+{
+	// TODO : Calibration 
+	
+	uint16_t combinedValue = ((uint16_t)readSensorRegisterValueMSB << 8) | readSensorRegisterValueLSB;
+	return combinedValue;
+}
+
+
+// ----------------------------------------------------
+
+
+
 
 uint8_t
 appendSensorDataINA219(uint8_t* buf)
