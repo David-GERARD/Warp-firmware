@@ -18,7 +18,7 @@
 #include "gpio_pins.h"
 #include "SEGGER_RTT.h"
 #include "warp.h"
-
+#include "devINA219.h"
 
 extern volatile WarpI2CDeviceState	deviceINA219State;
 extern volatile uint32_t		gWarpI2cBaudRateKbps;
@@ -32,13 +32,13 @@ initINA219(const uint8_t i2cAddress, uint16_t operatingVoltageMillivolts)
 	deviceINA219State.i2cAddress			= i2cAddress;
 	deviceINA219State.operatingVoltageMillivolts	= operatingVoltageMillivolts;
 
+	configureSensorINA219(configPackageINA219);
+
 	return;
 }
 
 // ----------------------------------------------------
-#include <stdint.h> // Ensure you include this for uint8_t and uint16_t definitions
 
-// Define the function to take a uint16_t payload instead of uint8_t
 WarpStatus 
 writeSensorRegisterINA219(uint8_t deviceRegister, uint16_t payload)
 {
@@ -72,29 +72,13 @@ writeSensorRegisterINA219(uint8_t deviceRegister, uint16_t payload)
     payloadBytes[1] = payload & 0xFF; // LSB
     warpEnableI2Cpins();
 
-    // First, send the device register and the MSB of the payload
     status = I2C_DRV_MasterSendDataBlocking(
         0 /* I2C instance */,
         &slave,
         commandByte,
         1,
-        &payloadBytes[0],
-        1,
-        gWarpI2cTimeoutMilliseconds);
-    if (status != kStatus_I2C_Success)
-    {
-        return kWarpStatusDeviceCommunicationFailed;
-    }
-
-    // Next, send the LSB of the payload
-    // Note: Depending on the device protocol, you might need to adjust how the LSB is sent or if additional steps are required
-    status = I2C_DRV_MasterSendDataBlocking(
-        0 /* I2C instance */,
-        &slave,
-        NULL, // No command byte needed for the second byte, if the device automatically increments the register address
-        0,
-        &payloadBytes[1],
-        1,
+        payloadBytes,
+        2,
         gWarpI2cTimeoutMilliseconds);
     if (status != kStatus_I2C_Success)
     {
@@ -108,15 +92,14 @@ writeSensorRegisterINA219(uint8_t deviceRegister, uint16_t payload)
 // ----------------------------------------------------
 
 WarpStatus
-configureSensorINA219(uint8_t payloadCONF_REG)
+configureSensorINA219(uint16_t payloadCONF_REG)  
 {
 	WarpStatus	i2cWriteStatus;
-
 
 	warpScaleSupplyVoltage(deviceINA219State.operatingVoltageMillivolts);
 
 	i2cWriteStatus = writeSensorRegisterINA219(kWarpSensorConfigurationRegisterINA219 /* register address for config */,
-												  payloadCONF_REG /* payload: Disable FIFO */
+												  payloadCONF_REG 
 	);
 
 
@@ -175,10 +158,10 @@ readSensorRegisterINA219(uint8_t deviceRegister, int numberOfBytes)
 	return kWarpStatusOK;
 }
 
-// ----------------------------------------------------
+// ----------------------------------------------------	
 
 void
-printSensorCurrentINA219(bool hexModeFlag)
+printSensorDataINA219(bool hexModeFlag)
 {
 	uint8_t	readSensorRegisterValueLSB;
 	int8_t	readSensorRegisterValueMSB;
@@ -189,7 +172,7 @@ printSensorCurrentINA219(bool hexModeFlag)
 	warpScaleSupplyVoltage(deviceINA219State.operatingVoltageMillivolts);
 
 
-	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Current, 2 /* numberOfBytes */);
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Shunt_Voltage, 2 /* numberOfBytes */);
 	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
 	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
 	readSensorRegisterValueCombined = ((int16_t)readSensorRegisterValueMSB << 8) | (readSensorRegisterValueLSB );  // Current is given in Two's complement
@@ -211,6 +194,73 @@ printSensorCurrentINA219(bool hexModeFlag)
 		}
 	}
 
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Bus_Voltage, 2 /* numberOfBytes */);
+	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	readSensorRegisterValueCombined = ((int16_t)readSensorRegisterValueMSB << 8) | (readSensorRegisterValueLSB );  // Current is given in Two's complement
+
+
+	if (i2cReadStatus != kWarpStatusOK)
+	{
+		warpPrint(" ----,");
+	}
+	else
+	{
+		if (hexModeFlag)
+		{
+			warpPrint(" 0x%02x 0x%02x,", readSensorRegisterValueMSB, readSensorRegisterValueLSB);
+		}
+		else
+		{
+			warpPrint(" %d,", readSensorRegisterValueCombined);
+		}
+	}
+
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Power, 2 /* numberOfBytes */);
+	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	readSensorRegisterValueCombined = ((int16_t)readSensorRegisterValueMSB << 8) | (readSensorRegisterValueLSB );  // Current is given in Two's complement
+
+
+	if (i2cReadStatus != kWarpStatusOK)
+	{
+		warpPrint(" ----,");
+	}
+	else
+	{
+		if (hexModeFlag)
+		{
+			warpPrint(" 0x%02x 0x%02x,", readSensorRegisterValueMSB, readSensorRegisterValueLSB);
+		}
+		else
+		{
+			warpPrint(" %d,", readSensorRegisterValueCombined);
+		}
+	}
+
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Current, 2 /* numberOfBytes */);
+	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	readSensorRegisterValueCombined = ((int16_t)readSensorRegisterValueMSB << 8) | (readSensorRegisterValueLSB );  // Current is given in Two's complement
+
+
+	if (i2cReadStatus != kWarpStatusOK)
+	{
+		warpPrint(" ----,");
+	}
+	else
+	{
+		if (hexModeFlag)
+		{
+			warpPrint(" 0x%02x 0x%02x, \n", readSensorRegisterValueMSB, readSensorRegisterValueLSB);
+		}
+		else
+		{
+			warpPrint(" %d, \n", readSensorRegisterValueCombined);
+		}
+	}
+
+
 }
 
 // ----------------------------------------------------
@@ -227,6 +277,81 @@ appendSensorDataINA219(uint8_t* buf)
 
 	warpScaleSupplyVoltage(deviceINA219State.operatingVoltageMillivolts);
 
+
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Bus_Voltage, 2 /* numberOfBytes */);
+	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	readSensorRegisterValueCombined = ((int16_t)readSensorRegisterValueMSB << 8) | (readSensorRegisterValueLSB );  // Current is given in Two's complement
+
+	if (i2cReadStatus != kWarpStatusOK)
+	{
+		buf[index] = 0;
+		index += 1;
+
+		buf[index] = 0;
+		index += 1;
+	}
+	else
+	{
+		/*
+		 * MSB first
+		 */
+		buf[index] = (uint8_t)(readSensorRegisterValueCombined >> 8);
+		index += 1;
+
+		buf[index] = (uint8_t)(readSensorRegisterValueCombined);
+		index += 1;
+	}
+
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Shunt_Voltage, 2 /* numberOfBytes */);
+	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	readSensorRegisterValueCombined = ((int16_t)readSensorRegisterValueMSB << 8) | (readSensorRegisterValueLSB );  // Current is given in Two's complement
+
+	if (i2cReadStatus != kWarpStatusOK)
+	{
+		buf[index] = 0;
+		index += 1;
+
+		buf[index] = 0;
+		index += 1;
+	}
+	else
+	{
+		/*
+		 * MSB first
+		 */
+		buf[index] = (uint8_t)(readSensorRegisterValueCombined >> 8);
+		index += 1;
+
+		buf[index] = (uint8_t)(readSensorRegisterValueCombined);
+		index += 1;
+	}
+
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Power, 2 /* numberOfBytes */);
+	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	readSensorRegisterValueCombined = ((int16_t)readSensorRegisterValueMSB << 8) | (readSensorRegisterValueLSB );  // Current is given in Two's complement
+
+	if (i2cReadStatus != kWarpStatusOK)
+	{
+		buf[index] = 0;
+		index += 1;
+
+		buf[index] = 0;
+		index += 1;
+	}
+	else
+	{
+		/*
+		 * MSB first
+		 */
+		buf[index] = (uint8_t)(readSensorRegisterValueCombined >> 8);
+		index += 1;
+
+		buf[index] = (uint8_t)(readSensorRegisterValueCombined);
+		index += 1;
+	}
 
 	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Current, 2 /* numberOfBytes */);
 	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
@@ -256,3 +381,7 @@ appendSensorDataINA219(uint8_t* buf)
 	return index;
 
 }
+
+
+
+

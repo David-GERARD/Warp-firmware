@@ -1123,6 +1123,12 @@ warpScaleSupplyVoltage(uint16_t voltageMillivolts)
 	}
 
 #if (!WARP_BUILD_ENABLE_GLAUX_VARIANT && !WARP_BUILD_ENABLE_FRDMKL03)
+
+	enableTPS62740(voltageMillivolts);
+	gWarpCurrentSupplyVoltage = voltageMillivolts;
+	
+
+
 	if (voltageMillivolts >= 1800 && voltageMillivolts <= 3300)
 	{
 		enableTPS62740(voltageMillivolts);
@@ -1130,7 +1136,9 @@ warpScaleSupplyVoltage(uint16_t voltageMillivolts)
 	}
 	else
 	{
+			warpPrint("%d",voltageMillivolts);
 			warpPrint(RTT_CTRL_RESET RTT_CTRL_BG_BRIGHT_RED RTT_CTRL_TEXT_BRIGHT_WHITE kWarpConstantStringErrorInvalidVoltage RTT_CTRL_RESET "\n", voltageMillivolts);
+			
 	}
 #endif
 }
@@ -1684,7 +1692,10 @@ main(void)
 
 #if (WARP_BUILD_ENABLE_DEVSSD1331) // 4B25 CW2 - Initialise screen
 {
+	warpPrint("\n\rRUNNING OLED INIT CODE HERE\n");
 	devSSD1331init();
+	warpPrint("\n\rDONE RUNNING OLED INIT CODE HERE\n");
+	OSA_TimeDelay(100); // time for current to stabilise
 }
 #endif
 
@@ -1700,8 +1711,10 @@ main(void)
 		initMMA8451Q(	0x1D	/* i2cAddress */,	kWarpDefaultSupplyVoltageMillivoltsMMA8451Q	);
 #endif
 
-#if (WARP_BUILD_ENABLE_DEVMMA8451Q)
-		initINA219(	0x40	/* i2cAddress */,	kWarpDefaultSupplyVoltageMillivoltsINA219	);
+#if (WARP_BUILD_ENABLE_DEVINA219)
+
+		warpPrint("INIT INA219\n");
+		initINA219(	0x40	/* i2cAddress */,	kWarpDefaultSupplyVoltageMillivoltsINA219);
 #endif
 
 #if (WARP_BUILD_ENABLE_DEVLPS25H)
@@ -1942,6 +1955,8 @@ main(void)
 	bool _originalWarpExtraQuietMode = gWarpExtraQuietMode;
 	gWarpExtraQuietMode = false;
 	warpPrint("Press any key to show menu...\n");
+	// warpPrint("INIT INA219\n");
+	//initINA219(	0x40	/* i2cAddress */,	kWarpDefaultSupplyVoltageMillivoltsINA219);
 	gWarpExtraQuietMode = _originalWarpExtraQuietMode;
 
 	while (rttKey < 0 && timer < kWarpCsvstreamMenuWaitTimeMilliSeconds)
@@ -2076,6 +2091,9 @@ main(void)
 		warpPrint("\r- 's': power up all sensors.\n");
 		warpPrint("\r- 't': dump processor state.\n");
 		warpPrint("\r- 'u': set I2C address.\n");
+#if (WARP_BUILD_ENABLE_DEVINA219)
+		warpPrint("\r- 'v': read INA219 Data.\n");
+#endif
 
 #if (WARP_BUILD_ENABLE_DEVAT45DB)
 		warpPrint("\r- 'R': read bytes from Flash.\n");
@@ -2543,6 +2561,8 @@ main(void)
 			 */
 			case 'j':
 			{
+
+				
 				bool		autoIncrement, chatty;
 				int		spinDelay, repetitionsPerAddress, chunkReadsPerAddress;
 				int		adaptiveSssupplyMaxMillivolts;
@@ -2715,6 +2735,19 @@ main(void)
 				}
 
 				break;
+			}
+			case 'v':
+			{
+
+		
+
+				warpPrint("\n\rRUNNING CURRENT MEASUREMENT CODE HERE\n");
+				warpPrint("\ncurrent (uA), bus (mV), shunt (uV), power (uW), time (ms)\n");
+
+				for (int i = 0; i < 10; i++)
+				{
+					printSensorDataINA219(1);
+				}
 			}
 #if (WARP_BUILD_ENABLE_DEVRV8803C7)
 			case 'v':
@@ -3676,7 +3709,7 @@ printAllSensors(bool printHeadersAndCalibration, bool hexModeFlag,
 #endif
 
 #if (WARP_BUILD_ENABLE_DEVINA219)
-		printSensorCurrentINA219(hexModeFlag);
+		printSensorDataINA219(hexModeFlag);
 #endif
 
 #if (WARP_BUILD_ENABLE_DEVMAG3110)
@@ -3932,7 +3965,7 @@ repeatRegisterReadForDeviceAndAddress(WarpSensorDevice warpSensorDevice, uint8_t
 						chatty				/*	chatty				*/
 			);
 #else
-			warpPrint("\r\n\tINA219 Read Aborted. Device Disabled :(");
+			warpPrint("\r\n\tMMA8451Q Read Aborted. Device Disabled :(");
 #endif
 
 			break;
@@ -3950,7 +3983,7 @@ case kWarpSensorINA219:
 						NULL,				/*	spiDeviceState			*/
 						baseAddress,			/*	baseAddress			*/
 						0x00,				/*	minAddress			*/
-						0x31,				/*	maxAddress			*/
+						0x05,				/*	maxAddress			*/
 						repetitionsPerAddress,		/*	repetitionsPerAddress		*/
 						chunkReadsPerAddress,		/*	chunkReadsPerAddress		*/
 						spinDelay,			/*	spinDelay			*/
@@ -3961,7 +3994,7 @@ case kWarpSensorINA219:
 						chatty				/*	chatty				*/
 			);
 #else
-			warpPrint("\r\n\tMMA8451Q Read Aborted. Device Disabled :(");
+			warpPrint("\r\n\tINA219 Read Aborted. Device Disabled :(");
 #endif
 
 			break;

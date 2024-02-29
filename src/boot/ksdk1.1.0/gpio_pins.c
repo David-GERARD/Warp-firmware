@@ -145,7 +145,7 @@ gpio_output_pin_user_config_t	outputPins[] = {
 			.config.slewRate = kPortSlowSlewRate,
 			.config.driveStrength = kPortLowDriveStrength,
 		},
-		/*	Not GPIO, so don't configure it as GPIO
+			Not GPIO, so don't configure it as GPIO
 		{
 			.pinName = kWarpPinI2C0_SCL_UART_TX,
 			.config.outputLogic = 1,
@@ -189,7 +189,7 @@ gpio_output_pin_user_config_t	outputPins[] = {
 			.config.slewRate = kPortSlowSlewRate,
 			.config.driveStrength = kPortLowDriveStrength,
 		},
-		/*	Not GPIO, so don't configure it as GPIO
+			Not GPIO, so don't configure it as GPIO
 		{
 			.pinName = kWarpPinCLKOUT32K,
 			.config.outputLogic = 1,
