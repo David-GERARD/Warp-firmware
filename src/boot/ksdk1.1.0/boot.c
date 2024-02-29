@@ -2456,7 +2456,7 @@ OSA_TimeDelay(200); // time for JLink to start
 				//int hexmode = warpWaitKey();
 
 				warpPrint("\n\rRUNNING CURRENT MEASUREMENT CODE HERE\n");
-				warpPrint("\nshunt (uV),  bus (mV),  power (uW), current (uA)\n");
+				warpPrint("\ncurrent (uA), shunt (uV),  bus (mV),  power (uW), time(ms)\n");
 
 				for (int i = 0; i < n_samples; i++)
 				{

@@ -293,6 +293,29 @@ printRealValuesINA219()
 
 	warpScaleSupplyVoltage(deviceINA219State.operatingVoltageMillivolts);
 
+	// i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Current, 2 /* numberOfBytes */);
+	// readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	// readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	// readSensorValueCombined = computeCurrent(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
+
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Shunt_Voltage, 2 /* numberOfBytes */);
+	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
+	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
+	readSensorValueCombined = computeShuntVoltage(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
+	float current = readSensorValueCombined/shuntResitance;
+
+
+	if (i2cReadStatus != kWarpStatusOK)
+	{
+		warpPrint(" ----,");
+	}
+	else
+	{
+
+			warpPrint("%d, ", (int)current);
+
+	}
+
 
 	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Shunt_Voltage, 2 /* numberOfBytes */);
 	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
@@ -345,29 +368,8 @@ printRealValuesINA219()
 
 	}
 
-	// i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Current, 2 /* numberOfBytes */);
-	// readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
-	// readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
-	// readSensorValueCombined = computeCurrent(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
-
-	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Shunt_Voltage, 2 /* numberOfBytes */);
-	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
-	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
-	readSensorValueCombined = computeShuntVoltage(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
-	float current = readSensorValueCombined/shuntResitance;
-
-
-	if (i2cReadStatus != kWarpStatusOK)
-	{
-		warpPrint(" ----,");
-	}
-	else
-	{
-
-			warpPrint("%d\n", (int)current);
-
-	}
-
+	
+	warpPrint("%d, \n",OSA_TimeGetMsec());
 
 }
 
@@ -431,7 +433,7 @@ int16_t
 computeCurrent(uint8_t readSensorRegisterValueMSB, uint8_t readSensorRegisterValueLSB)
 {
 	// TODO : Calibration 
-	
+
 	uint16_t combinedValue = ((uint16_t)readSensorRegisterValueMSB << 8) | readSensorRegisterValueLSB;
 	return combinedValue;
 }
