@@ -708,7 +708,7 @@ void OSA_TimeDelay(uint32_t delay)
  * Description   : This function gets current time in milliseconds.
  *
  *END**************************************************************************/
-uint32_t OSA_TimeGetMsec(void)
+uint64_t OSA_TimeGetMsec(void)
 {
     portTickType ticks;
 

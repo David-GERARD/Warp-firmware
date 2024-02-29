@@ -7,7 +7,7 @@ WarpStatus	writeSensorRegisterINA219(uint8_t deviceRegister, uint16_t payloadBty
 WarpStatus configureSensorINA219(uint16_t payloadCONF_REG);
 void printSensorDataINA219(bool hexModeFlag);
 uint8_t appendSensorDataINA219(uint8_t* buf);
-void printRealValuesINA219();
+void printRealValuesINA219(uint32_t time_start);
 
 int16_t computeShuntVoltage(uint8_t readSensorRegisterValueMSB, uint8_t readSensorRegisterValueLSB);
 int16_t computeBusVoltage(uint8_t readSensorRegisterValueMSB, uint8_t readSensorRegisterValueLSB);

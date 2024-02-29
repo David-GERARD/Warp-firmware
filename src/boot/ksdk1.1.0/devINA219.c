@@ -283,7 +283,7 @@ printSensorDataINA219(bool hexModeFlag)
 
 
 void
-printRealValuesINA219()
+printRealValuesINA219(uint32_t time_start)
 {
 	uint8_t	readSensorRegisterValueLSB;
 	int8_t	readSensorRegisterValueMSB;
@@ -312,7 +312,7 @@ printRealValuesINA219()
 	else
 	{
 
-			warpPrint("%d, ", (int)current);
+			warpPrint("%d, ", (uint32_t)current);
 
 	}
 
@@ -368,8 +368,9 @@ printRealValuesINA219()
 
 	}
 
+	unsigned int time = OSA_TimeGetMsec() - time_start;
 	
-	warpPrint("%d, \n",OSA_TimeGetMsec());
+	warpPrint("%d, \n",  time);
 
 }
 

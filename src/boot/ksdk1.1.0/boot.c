@@ -2450,17 +2450,20 @@ OSA_TimeDelay(200); // time for JLink to start
 			case 'v': // #CW3
 			{
 
-				warpPrint("\r\tEnter number of samples (0000)\n");
+				warpPrint("\r\nEnter number of samples (0000)\n");
 				int n_samples = read4digits();
 				//warpPrint("\r\thexmode [0-1]\n");
 				//int hexmode = warpWaitKey();
 
+				uint32_t time_start = OSA_TimeGetMsec();
+
 				warpPrint("\n\rRUNNING CURRENT MEASUREMENT CODE HERE\n");
 				warpPrint("\ncurrent (uA), shunt (uV),  bus (mV),  power (uW), time(ms)\n");
+				
 
 				for (int i = 0; i < n_samples; i++)
 				{
-					printRealValuesINA219();
+					printRealValuesINA219(time_start);
 				}
 			}
 #if (WARP_BUILD_ENABLE_DEVRV8803C7)
