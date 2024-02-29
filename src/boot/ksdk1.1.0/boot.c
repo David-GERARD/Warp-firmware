@@ -2455,7 +2455,9 @@ OSA_TimeDelay(200); // time for JLink to start
 				//warpPrint("\r\thexmode [0-1]\n");
 				//int hexmode = warpWaitKey();
 
-				uint32_t time_start = OSA_TimeGetMsec();
+				int32_t time_start = OSA_TimeGetMsec();
+				int32_t * ptr_time_start = &time_start;
+
 
 				warpPrint("\n\rRUNNING CURRENT MEASUREMENT CODE HERE\n");
 				warpPrint("\ncurrent (uA), shunt (uV),  bus (mV),  power (uW), time(ms)\n");
@@ -2463,7 +2465,7 @@ OSA_TimeDelay(200); // time for JLink to start
 
 				for (int i = 0; i < n_samples; i++)
 				{
-					printRealValuesINA219(time_start);
+					printRealValuesINA219(ptr_time_start);
 				}
 			}
 #if (WARP_BUILD_ENABLE_DEVRV8803C7)

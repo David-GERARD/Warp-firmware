@@ -283,7 +283,7 @@ printSensorDataINA219(bool hexModeFlag)
 
 
 void
-printRealValuesINA219(uint32_t time_start)
+printRealValuesINA219(int32_t* ptr_time_start)
 {
 	uint8_t	readSensorRegisterValueLSB;
 	int8_t	readSensorRegisterValueMSB;
@@ -367,10 +367,14 @@ printRealValuesINA219(uint32_t time_start)
 			warpPrint("%d, ",readSensorValueCombined);
 
 	}
-
-	unsigned int time = OSA_TimeGetMsec() - time_start;
-	
-	warpPrint("%d, \n",  time);
+	// 
+	uint16_t time = OSA_TimeGetMsec();
+	int32_t time_diff = time - *ptr_time_start;
+	if(time_diff<0){ // This appens when OSA_TimeGetMsec returns a number greater than 65535 and casts it as an int16
+		*ptr_time_start = *ptr_time_start - 65534;
+		time_diff = time - *ptr_time_start;
+	}
+	warpPrint("%d\n",time_diff);
 
 }
 
