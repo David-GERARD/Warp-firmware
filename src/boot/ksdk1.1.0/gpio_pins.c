@@ -89,19 +89,7 @@ gpio_output_pin_user_config_t	outputPins[] = {
 			.config.slewRate = kPortSlowSlewRate,
 			.config.driveStrength = kPortLowDriveStrength,
 		},
-		// 4B25 CW3 - Pins for current reader with driver INA219
-		{
-			.pinName = kINA219PinSCL,
-			.config.outputLogic = 1,
-			.config.slewRate = kPortSlowSlewRate,
-			.config.driveStrength = kPortLowDriveStrength,
-		},
-		{
-			.pinName = kINA219PinSDA,
-			.config.outputLogic = 1,
-			.config.slewRate = kPortSlowSlewRate,
-			.config.driveStrength = kPortLowDriveStrength,
-		},
+		
 
 		#if (WARP_BUILD_ENABLE_DEVIS25xP)
 		{

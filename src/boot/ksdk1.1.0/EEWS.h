@@ -1,7 +1,5 @@
 /*
-	Authored 2016-2018. Phillip Stanley-Marbell. Additional contributors,
-	2018-onwards, see git log.
-
+	Authored 2024. David Gerard. 
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -36,19 +34,39 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 
-void		initMMA8451Q(const uint8_t i2cAddress, uint16_t operatingVoltageMillivolts);
-WarpStatus	readSensorRegisterMMA8451Q(uint8_t deviceRegister, int numberOfBytes);
-WarpStatus	writeSensorRegisterMMA8451Q(uint8_t deviceRegister, uint8_t payloadBtye);
-WarpStatus 	configureSensorMMA8451Q(uint8_t payloadF_SETUP, uint8_t payloadCTRL_REG1);
-void		printSensorDataMMA8451Q(bool hexModeFlag);
-uint8_t		appendSensorDataMMA8451Q(uint8_t* buf);
 
-const uint8_t bytesPerMeasurementMMA8451Q            = 6;
-const uint8_t bytesPerReadingMMA8451Q                = 2;
-const uint8_t numberOfReadingsPerMeasurementMMA8451Q = 3;
+/*
+This file contains functions that implement an Earthquake Early Dectection System (EEWS)
+using a MMA8451Q 3 axis accelerometer.
 
+It was tested using a FRDM KL03Z development board, using the Warp firmware developped by Phillip Stanley-Marbell.
+*/
 
-// EEWS functions added by David Gerard for 4B25 CW4
-int16_t getSensorDataMMA8451Q_X();
-int16_t getSensorDataMMA8451Q_Y();
-int16_t getSensorDataMMA8451Q_Z();
+/*WARNING - MAKE SURE THAT BUFFER_SIZE (declared in buffer.h) IN BIG ENOUGH TO store all the values in LTA window*/
+
+const uint16_t STA_window_ms = 500; //ms
+const uint16_t LTA_window_ms = 5000; //ms
+const uint8_t sampling_rate = 15; //Hz
+
+const uint8_t n_measurements_for_Ac_Biases = 100;
+
+typedef struct {
+    int16_t AcX;
+    int16_t AcY;
+    int16_t AcZ;
+} Ac_Biases;
+
+typedef struct {
+    uint32_t STA;
+    uint32_t LTA;
+    uint32_t ratio;
+} STA_LTA_Result;
+
+void initEEWS(const uint8_t i2cAddress, uint16_t operatingVoltageMillivolts);
+void setAccelerationBiases(Ac_Biases * biases);
+void fillDataBuffer(CircularBuffer *cb,Ac_Biases *biases);
+
+uint16_t computeSeismicSignal(int16_t AcX,int16_t AcY,int16_t AcZ);
+void STAoverLTA(CircularBuffer *cb, STA_LTA_Result *result);
+
+void printEEWSData(CircularBuffer *cb, Ac_Biases *biases);

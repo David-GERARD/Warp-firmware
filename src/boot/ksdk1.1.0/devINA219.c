@@ -298,7 +298,7 @@ printRealValuesINA219(int32_t* ptr_time_start)
 	// readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
 	// readSensorValueCombined = computeCurrent(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
 
-	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Shunt_Voltage, 2 /* numberOfBytes */);
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Shunt_Voltage, 2); // 2 = numberOfBytes 
 	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
 	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
 	readSensorValueCombined = computeShuntVoltage(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
@@ -309,15 +309,14 @@ printRealValuesINA219(int32_t* ptr_time_start)
 	{
 		warpPrint(" ----,");
 	}
-	else
+	else 
 	{
 
 			warpPrint("%d, ", (uint32_t)current);
 
-	}
+	} 
 
-
-	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Shunt_Voltage, 2 /* numberOfBytes */);
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Shunt_Voltage, 2);// 2 = numberOfBytes 
 	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
 	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
 	readSensorValueCombined = computeShuntVoltage(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
@@ -334,7 +333,8 @@ printRealValuesINA219(int32_t* ptr_time_start)
 
 	}
 
-	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Bus_Voltage, 2 /* numberOfBytes */);
+
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Bus_Voltage, 2); // numberOfBytes 
 	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
 	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
 	readSensorValueCombined = computeBusVoltage(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
@@ -351,7 +351,7 @@ printRealValuesINA219(int32_t* ptr_time_start)
 
 	}
 
-	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Power, 2 /* numberOfBytes */);
+	i2cReadStatus = readSensorRegisterINA219(kWarpSensorOutputRegisterINA219_Power, 2); // numberOfBytes 
 	readSensorRegisterValueMSB = deviceINA219State.i2cBuffer[0];
 	readSensorRegisterValueLSB = deviceINA219State.i2cBuffer[1];
 	readSensorValueCombined = computePower(readSensorRegisterValueMSB,readSensorRegisterValueLSB);
@@ -367,6 +367,8 @@ printRealValuesINA219(int32_t* ptr_time_start)
 			warpPrint("%d, ",readSensorValueCombined);
 
 	}
+
+
 	// 
 	uint16_t time = OSA_TimeGetMsec();
 	int32_t time_diff = time - *ptr_time_start;

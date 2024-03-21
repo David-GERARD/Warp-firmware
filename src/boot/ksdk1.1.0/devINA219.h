@@ -18,7 +18,7 @@ int16_t computeCurrent(uint8_t readSensorRegisterValueMSB, uint8_t readSensorReg
 const uint8_t bytesPerMeasurementINA219            = 2;
 const uint8_t bytesPerReadingINA219                = 2;
 const uint8_t numberOfReadingsPerMeasurementINA219 = 1;
-const float shuntResitance = 0.097; // Ohms
+const float shuntResitance = 0.1; // Ohms
 
 
 uint16_t kINA219ConfigRST = 0b0; //Reset bit                - 1bit          - here: no reset
