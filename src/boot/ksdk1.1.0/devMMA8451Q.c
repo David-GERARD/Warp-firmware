@@ -429,6 +429,55 @@ appendSensorDataMMA8451Q(uint8_t* buf)
 // EEWS functions added by David Gerard for 4B25 CW4
 
 
+void
+configureSensorMMA8451QforEEWS(uint8_t payloadF_SETUP, uint8_t payloadXYZ_DATA_CFG)
+{
+	WarpStatus	i2cWriteStatus1, i2cWriteStatus2;
+
+
+	warpScaleSupplyVoltage(deviceMMA8451QState.operatingVoltageMillivolts);
+
+	i2cWriteStatus1 = writeSensorRegisterMMA8451Q(kWarpSensorConfigurationRegisterMMA8451QF_SETUP /* register address F_SETUP */,
+												  payloadF_SETUP /* payload: Disable FIFO */
+	);
+
+	// set sensor to rest mode
+	setSensorMMA8451QtoStandbyMode();
+
+	i2cWriteStatus2 = writeSensorRegisterMMA8451Q(kWarpSensorConfigurationRegisterMMA8451QXYZ_DATA_CFG /* register address XYZ_DATA_CFG */,
+												  payloadXYZ_DATA_CFG /* payload */
+	);
+
+	// set sensor to active mode
+	setSensorMMA8451QtoActiveMode();
+
+	return;
+}
+
+void
+setSensorMMA8451QtoStandbyMode(){
+	
+	WarpStatus	i2cWriteStatus;
+	i2cWriteStatus = writeSensorRegisterMMA8451Q(kWarpSensorConfigurationRegisterMMA8451QCTRL_REG1 /* register address CTRL_REG1 */,
+												  0x00 /* payload */
+	);
+	return;
+}
+
+void
+setSensorMMA8451QtoActiveMode(){
+	WarpStatus	i2cWriteStatus;
+
+	i2cWriteStatus = writeSensorRegisterMMA8451Q(kWarpSensorConfigurationRegisterMMA8451QCTRL_REG1 /* register address CTRL_REG1 */,
+												  0x01 /* payload */
+	);
+	return;
+}
+
+
+
+
+
 int16_t
 getSensorDataMMA8451Q_X()
 {
@@ -468,7 +517,7 @@ getSensorDataMMA8451Q_X()
 	}
 	else
 	{
-		return readSensorRegisterValueCombined;
+		return  (int16_t) readSensorRegisterValueCombined*1000/1024; // 8g mode
 	}
 
 }
@@ -512,7 +561,7 @@ getSensorDataMMA8451Q_Y()
 	}
 	else
 	{
-		return readSensorRegisterValueCombined;
+		return (int16_t) readSensorRegisterValueCombined*1000/1024; // 8g mode
 	}
 
 }
@@ -556,7 +605,7 @@ getSensorDataMMA8451Q_Z()
 	}
 	else
 	{
-		return readSensorRegisterValueCombined;
+		return (int16_t) readSensorRegisterValueCombined*1000/1024; // 8g mode
 	}
 
 }

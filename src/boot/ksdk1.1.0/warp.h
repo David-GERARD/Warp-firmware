@@ -116,6 +116,10 @@ typedef enum
 
 	kWarpSensorConfigurationRegisterMMA8451QF_SETUP			= 0x09,
 	kWarpSensorConfigurationRegisterMMA8451QCTRL_REG1		= 0x2A,
+	kWarpSensorConfigurationRegisterMMA8451QXYZ_DATA_CFG =  0x0E,
+	kWarpSensorConfigurationRegisterMMA8451QOFF_X = 0x2F,
+	kWarpSensorConfigurationRegisterMMA8451QOFF_Y = 0x30,
+	kWarpSensorConfigurationRegisterMMA8451QOFF_Z = 0x31,
 
 	kWarpSensorConfigurationRegisterMAG3110CTRL_REG1		= 0x10,
 	kWarpSensorConfigurationRegisterMAG3110CTRL_REG2		= 0x11,

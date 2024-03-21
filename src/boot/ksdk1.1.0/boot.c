@@ -1929,6 +1929,12 @@ OSA_TimeDelay(200); // time for JLink to start
 				Ac_Biases biases;
 				setAccelerationBiases(&biases);
 
+				warpPrint("Ac_Biases\n");
+				warpPrint("\n AcX,	AcY,	AcZ,\n");
+				warpPrint("\n %d,	%d,	%d,\n",biases.AcX,biases.AcY,biases.AcZ);
+				
+
+
 				CircularBuffer seismicDataBuffer;
 				CircularBuffer_Init(&seismicDataBuffer);
 				fillDataBuffer(&seismicDataBuffer,&biases);

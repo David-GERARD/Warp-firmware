@@ -75,9 +75,8 @@ initEEWS(const uint8_t i2cAddress, uint16_t operatingVoltageMillivolts){
     initMMA8451Q(	i2cAddress	/* i2cAddress */,	operatingVoltageMillivolts	);
 
     // Configure MMA8451Q accelerator
-    configureSensorMMA8451Q(0x00, /* Payload: Disable FIFO */0x01  /* Normal read 8bit, 800Hz, normal, active mode */);
-
-	
+    configureSensorMMA8451QforEEWS(	0x00, /* Payload: Disable FIFO */
+									0x02 /*8g mode*/);
 
     return;
 }

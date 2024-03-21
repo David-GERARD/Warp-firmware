@@ -52,3 +52,8 @@ const uint8_t numberOfReadingsPerMeasurementMMA8451Q = 3;
 int16_t getSensorDataMMA8451Q_X();
 int16_t getSensorDataMMA8451Q_Y();
 int16_t getSensorDataMMA8451Q_Z();
+
+void configureSensorMMA8451QforEEWS(uint8_t payloadF_SETUP,  uint8_t payloadXYZ_DATA_CFG);
+void setSensorMMA8451QtoStandbyMode();
+void setSensorMMA8451QtoActiveMode();
+
