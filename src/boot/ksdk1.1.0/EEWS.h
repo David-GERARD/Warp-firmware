@@ -72,9 +72,12 @@ typedef struct {
 void initEEWS(const uint8_t i2cAddress, uint16_t operatingVoltageMillivolts);
 void setAccelerationBiases(Ac_Biases * biases);
 void fillDataBuffer(CircularBuffer *cb,Ac_Biases *biases);
+void fillAcZBuffer(CircularBuffer *cb,Ac_Biases *biases);
 
 uint16_t computeSeismicSignal(int16_t AcX,int16_t AcY,int16_t AcZ);
 void STAoverLTA(CircularBuffer *cb, STA_LTA_Result *result);
+uint32_t STA_AcZoverSTA_Seismic(CircularBuffer *cb, CircularBuffer *cb_acz);
 uint16_t probaEarthquakeAlert(uint32_t max_ratio);
+uint16_t probaSwaves(uint32_t ratio);
 
-void printEEWSData(CircularBuffer *cb, Ac_Biases *biases, EarthquakeAlert *alert);
+void printEEWSData(CircularBuffer *cb, CircularBuffer *cb_acz, Ac_Biases *biases, EarthquakeAlert *alert);

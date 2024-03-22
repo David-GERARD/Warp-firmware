@@ -105,7 +105,6 @@ setAccelerationBiases(Ac_Biases * biases){
 void
 fillDataBuffer(CircularBuffer *cb,Ac_Biases *biases){
 	int16_t AcX,AcY,AcZ;
-	int status = 0;
 	uint16_t seismicSignal;
 
 	for (int i = 0; i < BUFFER_SIZE; i++)
@@ -122,6 +121,25 @@ fillDataBuffer(CircularBuffer *cb,Ac_Biases *biases){
 		
 
 		bufferAdd(cb,seismicSignal);
+		// warpPrint("\nBuffer %d / %d\n",i,BUFFER_SIZE);
+	}
+	
+	warpPrint("\nBuffer filled\n");
+
+}
+
+void
+fillAcZBuffer(CircularBuffer *cb,Ac_Biases *biases){
+	int16_t AcZ;
+
+
+	for (int i = 0; i < BUFFER_SIZE; i++)
+	{	
+		
+
+		int16_t AcZ = getSensorDataMMA8451Q_Z() - biases->AcZ;
+
+		bufferAdd(cb,AcZ);
 		// warpPrint("\nBuffer %d / %d\n",i,BUFFER_SIZE);
 	}
 	
@@ -177,6 +195,31 @@ STAoverLTA(CircularBuffer *cb, STA_LTA_Result *result) {
 }
 
 
+uint32_t 
+STA_AcZoverSTA_Seismic(CircularBuffer *cb, CircularBuffer *cb_acz){
+
+	uint16_t n_samples_STA =  sampling_rate*STA_window_ms/1000;
+
+	// Initialize count to 0 for STA calculation
+    uint32_t sum_acz = 0;
+	uint32_t sum_Seismic = 0;
+
+    for (int i = 0; i < n_samples_STA; i++) {
+        sum_Seismic += bufferGet(cb, i);
+		sum_acz +=  bufferGet(cb_acz, i);
+
+		//warpPrint("\n%d\n",bufferGet(cb, i));
+		
+    }
+    uint32_t STA = sum_Seismic / n_samples_STA;
+	uint32_t STA_AcZ = sum_acz / n_samples_STA;
+
+	uint32_t  ratio = 100 * STA_AcZ / STA;
+
+	return ratio;
+}
+
+
 uint16_t 
 probaEarthquakeAlert(uint32_t max_ratio){
     float proba_float; // Temporary variable for calculations
@@ -199,8 +242,31 @@ probaEarthquakeAlert(uint32_t max_ratio){
     return proba;
 }
 
+uint16_t 
+probaSwaves(uint32_t ratio){
+	float proba_float; // Temporary variable for calculations
+
+    if (ratio < 33){
+        proba_float = 100.0f *0.5f*1.0f/(0.5f*1.0f+0.5f*0.0f);
+    }
+    else{
+        if(ratio < 50 ){
+            proba_float = 100.0f *0.5f*0.5f/(0.5f*0.5f+0.5f*0.5f);
+        }
+        else{
+            proba_float = 100.0f *0.5f*0.0f/(0.5f*0.0f+0.5f*0.1f);
+		}
+    }
+
+    // Convert the floating-point probability to uint16_t for the return value, ensuring no unintended truncation
+    uint16_t proba = (uint16_t)(proba_float + 0.5f); // Adding 0.5f for rounding to nearest integer
+
+    return proba;
+}
+
+
 void
-printEEWSData(CircularBuffer *cb, Ac_Biases *biases,  EarthquakeAlert *alert){
+printEEWSData(CircularBuffer *cb, CircularBuffer *cb_acz, Ac_Biases *biases,  EarthquakeAlert *alert){
 
 
 	uint16_t start_time = OSA_TimeGetMsec();
@@ -208,6 +274,9 @@ printEEWSData(CircularBuffer *cb, Ac_Biases *biases,  EarthquakeAlert *alert){
 	int16_t AcX = getSensorDataMMA8451Q_X() - biases->AcX;
 	int16_t AcY = getSensorDataMMA8451Q_Y() - biases->AcY;
 	int16_t AcZ = getSensorDataMMA8451Q_Z() - biases->AcZ;
+
+	uint16_t AcZ_abs = sqrtf(AcZ*AcZ);
+	bufferAdd(cb_acz,AcZ_abs);
 
 	//warpPrint("%d, ", AcX);
 	//warpPrint("%d, ", AcY);
@@ -256,6 +325,24 @@ printEEWSData(CircularBuffer *cb, Ac_Biases *biases,  EarthquakeAlert *alert){
 	uint16_t probaAlert =  probaEarthquakeAlert(alert->max_ratio);
 
 	warpPrint("%d, ", probaAlert);
+
+
+	uint16_t probaS;
+
+	if(alert->alert_status){
+		uint32_t ratio =  STA_AcZoverSTA_Seismic(cb, cb_acz);
+		probaS =  probaSwaves(ratio);
+		warpPrint("%d, ", 100-probaS); // P waves
+		warpPrint("%d, ", probaS); // S waves
+
+	}
+	else{ // not in alert mode, no waves
+			warpPrint(" , ");
+			warpPrint(" , ");
+	}
+
+
+
 	
 
 	uint16_t end_time = OSA_TimeGetMsec();

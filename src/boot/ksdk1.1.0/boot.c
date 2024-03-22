@@ -1449,18 +1449,24 @@ OSA_TimeDelay(200); // time for JLink to start
 				CircularBuffer_Init(&seismicDataBuffer);
 				fillDataBuffer(&seismicDataBuffer,&biases);
 
+				CircularBuffer AcZDataBuffer;
+				CircularBuffer_Init(&AcZDataBuffer);
+				fillAcZBuffer(&AcZDataBuffer,&biases);
+
+
+
 				
 
 				warpPrint("Press any key to stop stream...\n");
 				//warpPrint("\nAcX,AcY,AcZ,Seismic_signal,STA,LTA,10xSTAoverLTA, EarthQuakeProba\n");
-				warpPrint("\n10xSTAoverLTA, EarthQuakeProba\n");
+				warpPrint("\n10xSTAoverLTA,EarthQuakeProba,P-WaveProba,S-WaveProba\n");
 				
 				while (rttKey < 0)
 				{
 					
 					rttKey = SEGGER_RTT_GetKey();
 
-					printEEWSData( &seismicDataBuffer, &biases, &alert);
+					printEEWSData( &seismicDataBuffer, &AcZDataBuffer, &biases, &alert);
 
 
 					
