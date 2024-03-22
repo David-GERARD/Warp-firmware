@@ -177,11 +177,31 @@ STAoverLTA(CircularBuffer *cb, STA_LTA_Result *result) {
 }
 
 
+uint16_t 
+probaEarthquakeAlert(uint32_t max_ratio){
+    float proba_float; // Temporary variable for calculations
 
+    if (max_ratio > 20){
+        proba_float = 100.0f * P_earthquake * 1.0f / (P_earthquake * 1.0f + (1.0f - P_earthquake) * 0.0f);
+    }
+    else{
+        if(max_ratio > 15){
+            proba_float = 100.0f * P_earthquake * 1.0f / (P_earthquake * 1.0f + (1.0f - P_earthquake) * 0.33f);
+        }
+        else{
+            proba_float = 100.0f * P_earthquake * 0.0f / (P_earthquake * 0.0f + (1.0f - P_earthquake) * 1.0f); 
+        }
+    }
 
+    // Convert the floating-point probability to uint16_t for the return value, ensuring no unintended truncation
+    uint16_t proba = (uint16_t)(proba_float + 0.5f); // Adding 0.5f for rounding to nearest integer
+
+    return proba;
+}
 
 void
-printEEWSData(CircularBuffer *cb, Ac_Biases *biases){
+printEEWSData(CircularBuffer *cb, Ac_Biases *biases,  EarthquakeAlert *alert){
+
 
 	uint16_t start_time = OSA_TimeGetMsec();
 
@@ -189,23 +209,54 @@ printEEWSData(CircularBuffer *cb, Ac_Biases *biases){
 	int16_t AcY = getSensorDataMMA8451Q_Y() - biases->AcY;
 	int16_t AcZ = getSensorDataMMA8451Q_Z() - biases->AcZ;
 
-	warpPrint("%d, ", AcX);
-	warpPrint("%d, ", AcY);
-	warpPrint("%d, ", AcZ);
+	//warpPrint("%d, ", AcX);
+	//warpPrint("%d, ", AcY);
+	//warpPrint("%d, ", AcZ);
 	
 
 	uint16_t seismicSignal = computeSeismicSignal(AcX,AcY,AcZ);
-	warpPrint("%d, ", seismicSignal);
+	//warpPrint("%d, ", seismicSignal);
 
 	bufferAdd(cb,seismicSignal);
 
 	STA_LTA_Result results;
 	STAoverLTA(cb,&results);
 
-	warpPrint("%d, ", results.STA);
-	warpPrint("%d, ", results.LTA);
+	//warpPrint("%d, ", results.STA);
+	//warpPrint("%d, ", results.LTA);
 	warpPrint("%d, ", results.ratio);
 
+	if (alert->alert_status)
+	{
+		if (results.ratio<10)
+		{
+			alert->alert_status = 0;
+			alert->max_ratio = 0;
+		}
+		else
+		{
+			if(results.ratio > alert->max_ratio){
+				alert->max_ratio = results.ratio;
+			}
+		}
+		
+	}
+	else{
+		if (results.ratio>15)
+		{
+			alert->alert_status = 1;
+			alert->max_ratio = results.ratio;
+
+		}
+	}
+	
+
+	
+
+	uint16_t probaAlert =  probaEarthquakeAlert(alert->max_ratio);
+
+	warpPrint("%d, ", probaAlert);
+	
 
 	uint16_t end_time = OSA_TimeGetMsec();
 

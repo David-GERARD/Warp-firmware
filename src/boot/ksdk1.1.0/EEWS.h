@@ -42,6 +42,8 @@ using a MMA8451Q 3 axis accelerometer.
 It was tested using a FRDM KL03Z development board, using the Warp firmware developped by Phillip Stanley-Marbell.
 */
 
+const float P_earthquake = 0.01; // The probability is set very high to show better the differences in posterior probability
+
 /*WARNING - MAKE SURE THAT BUFFER_SIZE (declared in buffer.h) IN BIG ENOUGH TO store all the values in LTA window*/
 
 const uint16_t STA_window_ms = 500; //ms
@@ -62,11 +64,17 @@ typedef struct {
     uint32_t ratio;
 } STA_LTA_Result;
 
+typedef struct {
+    uint8_t max_ratio;
+    uint32_t alert_status;
+} EarthquakeAlert;
+
 void initEEWS(const uint8_t i2cAddress, uint16_t operatingVoltageMillivolts);
 void setAccelerationBiases(Ac_Biases * biases);
 void fillDataBuffer(CircularBuffer *cb,Ac_Biases *biases);
 
 uint16_t computeSeismicSignal(int16_t AcX,int16_t AcY,int16_t AcZ);
 void STAoverLTA(CircularBuffer *cb, STA_LTA_Result *result);
+uint16_t probaEarthquakeAlert(uint32_t max_ratio);
 
-void printEEWSData(CircularBuffer *cb, Ac_Biases *biases);
+void printEEWSData(CircularBuffer *cb, Ac_Biases *biases, EarthquakeAlert *alert);
